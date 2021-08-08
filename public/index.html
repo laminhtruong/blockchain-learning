@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo</title>
+</head>
+
+<body onload="MetaMaskInit()">
+    <script src="./API.js"></script>
+    <script>
+        let api = new API();
+        let wallet = "";
+
+        function Register()
+        {
+            let email = document.getElementById("text-email").value;
+            let name = document.getElementById("text-name").value;
+            let wallet = document.getElementById("text-wallet").value;
+
+            api.Register(email, name, wallet)
+                .then(response =>
+                {
+                    console.log(response);
+                })
+                .catch(error =>
+                {
+                    console.log(error);
+                });
+        }
+
+        function MetaMaskInit()
+        {
+            if (typeof window.ethereum === 'undefined')
+            {
+                console.log('MetaMask is not install!');
+                return;
+            }
+
+            ethereum.on('connect', (information) =>
+            {
+                let chainMapping = {
+                    "0x1": "Ethereum Main Network",
+                    "0x3": "Ropsten Test Network",
+                    "0x4": "Rinkeby Test Network",
+                    "0x5": "Goerli Test Network",
+                    "0x2": "Kovan Test Network"
+                }
+                console.log(`MetaMask is already connect to ${chainMapping[information.chainId]}`);
+            });
+
+            ethereum.on('accountsChanged', (accounts) =>
+            {
+                MetaMaskUpdateAccount(accounts);
+            });
+
+            ethereum.on('chainChanged', (chainId) =>
+            {
+                window.location.reload();
+            });
+        }
+
+        function MetaMaskConnect()
+        {
+            if (typeof window.ethereum === 'undefined')
+            {
+                return;
+            }
+
+            ethereum.request({ method: 'eth_requestAccounts' })
+                .then(accounts =>
+                {
+                    MetaMaskUpdateAccount(accounts);
+                })
+                .catch(error =>
+                {
+                    console.log(error);
+                });
+        }
+
+        function MetaMaskUpdateAccount(accounts)
+        {
+            if (accounts.length > 0)
+            {
+                wallet = accounts[0];
+                document.getElementById("text-wallet").value = wallet;
+            }
+        }
+    </script>
+
+    <h2>Demo</h2>
+    <div id="ethereum">
+        <button id="button-connect-meta-mask" onclick="MetaMaskConnect()">Connect MetaMask</button>
+    </div>
+    <div id="form">
+        <input id="text-email" type="text" placeholder="email" />
+        <input id="text-name" type="text" placeholder="name" />
+        <input id="text-wallet" type="text" disabled />
+        <button id="button-register" onclick="Register()">Register</button>
+    </div>
+</body>
+
+</html>
